@@ -60,7 +60,7 @@ $ mvn spring-boot:run
 ```
 
 ## Herramientas utilizadas
-- Java 17, Spring Boot 3.x, Spring Data JPA, H2
+- Java 17, Spring Boot 4.1.1, Spring Data JPA, H2
 - Apache Maven, Postman/curl, Git, GitHub
 
 ### Documentacion
