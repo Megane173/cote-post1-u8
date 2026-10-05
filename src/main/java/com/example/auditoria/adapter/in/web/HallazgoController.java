@@ -1,10 +1,9 @@
 package com.example.auditoria.adapter.in.web;
 
 // adapter/in/web/HallazgoController.java
-
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+
+import com.example.auditoria.usecase.ConsultarHistorialUseCase;
 import com.example.auditoria.adapter.in.web.dto.HallazgoResponse;
 import com.example.auditoria.adapter.in.web.dto.IniciarRemediacionRequest;
 import com.example.auditoria.adapter.in.web.dto.ReabrirRequest;
@@ -24,9 +25,11 @@ import com.example.auditoria.domain.HallazgoId;
 import com.example.auditoria.usecase.CerrarHallazgoUseCase;
 import com.example.auditoria.usecase.ConsultarHallazgoUseCase;
 import com.example.auditoria.usecase.IniciarRemediacionUseCase;
+import com.example.auditoria.usecase.ObtenerDashboardAuditoriaUseCase;
 import com.example.auditoria.usecase.ReabrirHallazgoUseCase;
 import com.example.auditoria.usecase.RegistrarHallazgoUseCase;
-
+import com.example.auditoria.usecase.port.CambioEstadoView;
+import com.example.auditoria.usecase.port.DashboardAuditoriaView;
 
 
 @RestController
@@ -38,24 +41,33 @@ public class HallazgoController {
     private final CerrarHallazgoUseCase cerrarUseCase;
     private final ReabrirHallazgoUseCase reabrirUseCase;
     private final ConsultarHallazgoUseCase consultarUseCase;
+    private final ObtenerDashboardAuditoriaUseCase dashboardUseCase;
+    private final ConsultarHistorialUseCase consultarHistorialUseCase;
 
-    public HallazgoController(CerrarHallazgoUseCase cerrarUseCase, ConsultarHallazgoUseCase consultarUseCase, IniciarRemediacionUseCase iniciarRemediacionUseCase, ReabrirHallazgoUseCase reabrirUseCase, RegistrarHallazgoUseCase registrarUseCase) {
-        this.cerrarUseCase = cerrarUseCase;
-        this.consultarUseCase = consultarUseCase;
-        this.iniciarRemediacionUseCase = iniciarRemediacionUseCase;
-        this.reabrirUseCase = reabrirUseCase;
-        this.registrarUseCase = registrarUseCase;
-    }
+    public HallazgoController(
+        CerrarHallazgoUseCase cerrarUseCase,
+        ConsultarHallazgoUseCase consultarUseCase,
+        IniciarRemediacionUseCase iniciarRemediacionUseCase,
+        ReabrirHallazgoUseCase reabrirUseCase,
+        RegistrarHallazgoUseCase registrarUseCase,
+        ObtenerDashboardAuditoriaUseCase dashboardUseCase,
+        ConsultarHistorialUseCase consultarHistorialUseCase) {
 
+    this.cerrarUseCase = cerrarUseCase;
+    this.consultarUseCase = consultarUseCase;
+    this.iniciarRemediacionUseCase = iniciarRemediacionUseCase;
+    this.reabrirUseCase = reabrirUseCase;
+    this.registrarUseCase = registrarUseCase;
+    this.dashboardUseCase = dashboardUseCase;
+    this.consultarHistorialUseCase = consultarHistorialUseCase;
+}
 
     // Constructor con todas las inyecciones...
-    
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Map<String, String> registrar(@RequestBody RegistrarHallazgoRequest req) {
         HallazgoId id = registrarUseCase.ejecutar(
-            req.titulo(), req.descripcion(), req.areaResponsable(), req.severidad(), req.fechaDeteccion());
+                req.titulo(), req.descripcion(), req.areaResponsable(), req.severidad(), req.fechaDeteccion());
         return Map.of("hallazgoId", id.toString());
     }
 
@@ -63,7 +75,7 @@ public class HallazgoController {
     public Map<String, String> iniciarRemediacion(@PathVariable String id,
             @RequestBody IniciarRemediacionRequest req) {
         iniciarRemediacionUseCase.ejecutar(
-            new HallazgoId(UUID.fromString(id)), req.responsable(), req.fechaLimite(), req.notas());
+                new HallazgoId(UUID.fromString(id)), req.responsable(), req.fechaLimite(), req.notas());
         return Map.of("estado", "EN_REMEDIACION");
     }
 
@@ -80,12 +92,23 @@ public class HallazgoController {
     }
 
     @GetMapping("/{id}")
-    public HallazgoResponse buscar(@PathVariable String id) {
+    public HallazgoResponse buscar(@PathVariable String id) {   
         return consultarUseCase.buscarPorId(new HallazgoId(UUID.fromString(id)));
     }
 
     @GetMapping
     public List<HallazgoResponse> listar() {
         return consultarUseCase.listarTodos();
+    }
+
+    // adapter/in/web/HallazgoController.java (extendido en la Parte 2)
+    @GetMapping("/dashboard")
+    public DashboardAuditoriaView dashboard() {
+        return dashboardUseCase.ejecutar();
+    }
+
+    @GetMapping("/{id}/historial")
+    public List<CambioEstadoView> historial(@PathVariable String id) {
+        return consultarHistorialUseCase.ejecutar(new HallazgoId(UUID.fromString(id)));
     }
 }
