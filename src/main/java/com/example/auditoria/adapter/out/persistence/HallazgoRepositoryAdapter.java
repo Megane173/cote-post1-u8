@@ -10,7 +10,9 @@ import com.example.auditoria.domain.EstadoHallazgo;
 import com.example.auditoria.domain.HallazgoId;
 import com.example.auditoria.domain.PlanRemediacion;
 import com.example.auditoria.domain.entity.HallazgoAuditoria;
+import com.example.auditoria.usecase.port.ConteoCategoria;
 import com.example.auditoria.usecase.port.HallazgoRepositoryPort;
+import com.example.auditoria.usecase.port.PromedioCategoria;
 
 // adapter/out/persistence/HallazgoRepositoryAdapter.java
 @Component
@@ -72,5 +74,20 @@ public class HallazgoRepositoryAdapter implements HallazgoRepositoryPort {
                 .stream()
                 .map(this::toDomain)
                 .toList();
+    }
+
+    @Override
+    public List<ConteoCategoria> contarPorSeveridad() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<ConteoCategoria> contarPorEstado() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<PromedioCategoria> promedioDiasCierrePorArea() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
